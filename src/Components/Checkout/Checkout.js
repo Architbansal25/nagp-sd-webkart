@@ -6,7 +6,7 @@ export default function Checkout() {
   const location = useLocation();
   const { products, orderDetails } = location.state || {};
   const orderPlacedRef = useRef(false);
-  const totalAmount = products?.reduce((sum, item) => sum + item.buyAtPrice * item.quantity, 0) || 0;
+  const totalAmount = orderDetails.paidAmount || 0;
   const backendUrl = "ae7b879491443483190312829691524e-767193481.ap-south-1.elb.amazonaws.com"
   useEffect(() => {
     if (!orderPlacedRef.current && products?.length && orderDetails) {
@@ -53,6 +53,7 @@ export default function Checkout() {
           <p><strong>Email:</strong> {orderDetails?.userName}</p>
           <p><strong>Shipping Address:</strong> {orderDetails?.shippingAddress}</p>
           <p><strong>Payment Status:</strong> <span className="text-green-600">{orderDetails?.paymentStatus}</span></p>
+          <p><strong>Coupan Code:</strong> <span className="text-green-600">{orderDetails?.coupanCode}</span></p>
           
           {/* Product Table */}
           <div className="mt-4">
@@ -83,7 +84,7 @@ export default function Checkout() {
 
           {/* Total Order Amount */}
           <p className="text-lg font-semibold mt-4 text-gray-800">
-            Total Amount: ₹{totalAmount}
+            Paid Amount: ₹{totalAmount}
           </p>
         </div>
       <Link to="/">

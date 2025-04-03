@@ -138,7 +138,8 @@ export default function Cart() {
       coupanCode: appliedCoupon ? appliedCoupon.code : "",
       paymentStatus: "pending",  // Default until payment success
       shippingId: null,
-      shippingAddress: null  // Will be updated in Shipping.js
+      shippingAddress: null,  // Will be updated in Shipping.js
+      paidAmount: subtotal
     };
     
     console.log("Products:", products);
