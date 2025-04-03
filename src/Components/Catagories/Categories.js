@@ -24,7 +24,7 @@ export default function Categories() {
 
       return(
         <div className="text-center mt-14">
-        <h2 className="text-5xl font-extrabold text-red-700">Shop below Categories</h2>
+        <h2 className="text-5xl font-extrabold text-red-700">Shop By Category</h2>
 
         {/* Category Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mt-10 px-6">

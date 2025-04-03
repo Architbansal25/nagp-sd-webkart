@@ -9,7 +9,7 @@ export default function Login({ switchToSignup }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
+  const backendUrl = "ae7b879491443483190312829691524e-767193481.ap-south-1.elb.amazonaws.com"
   // Handle Google Login
   const handleGoogleLogin = async () => {
     try {
@@ -32,7 +32,7 @@ export default function Login({ switchToSignup }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:9092/auth/login", {
+      const response = await fetch(`http://${backendUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

@@ -22,7 +22,8 @@ export default function Shipping() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); // Hook for redirection
-  const userEmail = 'archit@gmail.com'; // Replace with actual user data
+  const userEmail = localStorage.getItem("username");
+  const backendUrl = "ae7b879491443483190312829691524e-767193481.ap-south-1.elb.amazonaws.com" // Replace with actual user data
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -45,7 +46,7 @@ export default function Shipping() {
 
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:9093/shipping/add', {
+      const response = await axios.post(`http://${backendUrl}/shipping/add`, {
         userName: userEmail,
         ...formData,
       }, {
@@ -71,7 +72,7 @@ export default function Shipping() {
         });
 
         // Redirect to payment page after success
-        setTimeout(() =>  navigate('/payment', { state: { products, orderDetails: { ...orderDetails, shippingId: newShippingId } } }), 2000); // Redirect after 2 seconds
+        setTimeout(() =>  navigate('/payment', { state: { products, orderDetails: { ...orderDetails, shippingId: newShippingId, shippingAddress: formData.fullAddress } } }), 2000); // Redirect after 2 seconds
       }
     } catch (error) {
       console.error('Error submitting address:', error);

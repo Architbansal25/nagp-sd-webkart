@@ -35,7 +35,16 @@ export default function About() {
           <Banner/>
 
         </section>
-  
+        {/* Contact Us Section */}
+        <section className="text-center bg-gray-50 p-6 rounded-xl shadow-md mt-12">
+          <h2 className="text-2xl font-semibold text-gray-800">Contact Us</h2>
+          <p className="text-gray-600 mt-2">
+            Have questions? Need support? Reach out to us at:
+          </p>
+          <p className="text-lg font-semibold text-blue-600 mt-2">
+            <a href="mailto:webcart.support@gmail.com">webkart.support@gmail.com</a>
+          </p>
+        </section>
         {/* Call to Action */}
         <section className="text-center space-y-4">
           <h2 className="text-2xl font-semibold text-gray-800">Join Thousands of Happy Shoppers</h2>

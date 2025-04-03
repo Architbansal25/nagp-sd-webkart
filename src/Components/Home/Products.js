@@ -1,66 +1,62 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import DiscountImage from "../../assests/images/PImages/WomenKurta.png";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import ServiceUnavailable from "../SystemError/ServiceUnavailable";
-
-
-
-
+import LoadBubbleEffect from "../Effects/LoadBubbleEffect";
 const Product = () => {
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [sortOption, setSortOption] = useState("");
-  const [sampleProducts, setProducts] = useState([]);
-  const [SystemError, setSystemError] = useState(false);
- 
-  const fetchProducts = async () => {
-    try{
-      const response = await fetch("http://localhost:9091/products");
-      const data = await response.json();
-      if(data.length>0){
+  const [products, setProducts] = useState([]);
+  const [brands, setBrands] = useState([]); // Store unique brands
+  const [systemError, setSystemError] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const backendUrl = "http://ae7b879491443483190312829691524e-767193481.ap-south-1.elb.amazonaws.com";
 
+  // Extract category from URL query
+  const queryParams = new URLSearchParams(location.search);
+  const selectedCategory = queryParams.get("category");
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(`${backendUrl}/products`);
+      const data = await response.json();
+      if (data.length > 0) {
         setProducts(data);
-        console.log(data);
+
+        // Filter products based on category if selected
+        let categoryFilteredProducts = data;
+        if (selectedCategory) {
+          categoryFilteredProducts = data.filter((product) =>
+            product.categories?.includes(selectedCategory)
+          );
+        }
+
+        // Extract unique brands (all brands if no category, else category-specific brands)
+        const uniqueBrands = [...new Set(categoryFilteredProducts.map((product) => product.brand))];
+        setBrands(uniqueBrands);
+        setLoading(false);
       }
-    }
-    catch(err){
-      //navigate("/error");
-      //return (<div><ServiceUnavailable /></div>);
+    } catch (err) {
       setSystemError(true);
     }
   };
 
-  const location = useLocation();
-  const navigate = useNavigate();
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [selectedCategory]); // Refetch products when category changes
 
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);
   };
 
-  // Handle Brand Filtering
-  const handleBrandChange = (brand) => {
-    setSelectedBrands((prevBrands) =>
-      prevBrands.includes(brand)
-        ? prevBrands.filter((b) => b !== brand)
-        : [...prevBrands, brand]
-    );
-  };
+  // Filter Products by Selected Brands
+  let filteredProducts = products.filter((product) =>
+    selectedCategory ? product.categories?.includes(selectedCategory) : true
+  );
 
-  // Handle Sorting
-  const handleSortChange = (option) => {
-    setSortOption(option);
-  };
-  if(SystemError){
-    return (<div><ServiceUnavailable /></div>);
-  }
-
-  // Filter Products Based on Selected Brands
-  let filteredProducts = sampleProducts.filter(
-    (product) =>
-      selectedBrands.length === 0 || selectedBrands.includes(product.brand)
+  filteredProducts = filteredProducts.filter(
+    (product) => selectedBrands.length === 0 || selectedBrands.includes(product.brand)
   );
 
   // Sort Products Based on Selected Option
@@ -72,6 +68,16 @@ const Product = () => {
     filteredProducts.sort((a, b) => (b.reviews || 0) - (a.reviews || 0));
   }
 
+  if (systemError) {
+    return <ServiceUnavailable />;
+  }
+  if (loading) {
+        return (
+          <div className="flex justify-center items-center h-screen">
+            <LoadBubbleEffect />
+          </div>
+        );
+      }
   return (
     <div className="flex p-6">
       {/* Left Sidebar - Filters */}
@@ -81,22 +87,24 @@ const Product = () => {
         {/* Brand Filter */}
         <div className="mb-6">
           <h3 className="text-md font-semibold">Brand</h3>
-          <label className="flex items-center space-x-2 mt-2">
-            <input
-              type="checkbox"
-              onChange={() => handleBrandChange("Zara")}
-              checked={selectedBrands.includes("Zara")}
-            />
-            <span>Zara</span>
-          </label>
-          <label className="flex items-center space-x-2 mt-2">
-            <input
-              type="checkbox"
-              onChange={() => handleBrandChange("H&M")}
-              checked={selectedBrands.includes("H&M")}
-            />
-            <span>H&M</span>
-          </label>
+          {brands.length > 0 ? (
+            brands.map((brand) => (
+              <label key={brand} className="flex items-center space-x-2 mt-2">
+                <input
+                  type="checkbox"
+                  onChange={() =>
+                    setSelectedBrands((prev) =>
+                      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
+                    )
+                  }
+                  checked={selectedBrands.includes(brand)}
+                />
+                <span>{brand}</span>
+              </label>
+            ))
+          ) : (
+            <p className="text-gray-500 text-sm mt-2">No brands available</p>
+          )}
         </div>
 
         {/* Sorting Options */}
@@ -104,7 +112,7 @@ const Product = () => {
           <h3 className="text-md font-semibold">Sort By</h3>
           <select
             className="w-full p-2 border rounded mt-2"
-            onChange={(e) => handleSortChange(e.target.value)}
+            onChange={(e) => setSortOption(e.target.value)}
           >
             <option value="">Select</option>
             <option value="lowToHigh">Price: Low to High</option>
@@ -116,70 +124,51 @@ const Product = () => {
 
       {/* Right Section - Products */}
       <section className="w-3/4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-4">
-        {filteredProducts.map((product) => (
-          <div
-            key={product.productId}
-            className="border p-4 rounded-lg shadow-lg flex flex-col justify-between cursor-pointer" onClick={() => handleProductClick(product.productId)}
-          >
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-64 object-contain rounded-md"
-            />
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold">{product.name}</h3>
-              <p className="text-gray-500">{product.brand}</p>
-              {/* Product Rating - Show rating or "No reviews" */}
-              <div className="mt-2">
-                {product.rating ? (
-                  <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-md">
-                    ({product.rating}) ★
-                  </span>
-                ) : (
-                  <div className="flex items-center">
-                    <hr className="flex-grow border-gray-300 mr-2" />
-                    <span className="text-sm text-gray-600 italic">No reviews</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Product Rating - Show only if rating exists */}
-
-              {product.reviews && product.reviews.length > 0 && (
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map((product) => (
+            <div
+              key={product.productId}
+              className="border p-4 rounded-lg shadow-lg flex flex-col justify-between cursor-pointer"
+              onClick={() => handleProductClick(product.productId)}
+            >
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-64 object-contain rounded-md"
+              />
+              <div className="mt-4">
+                <h3 className="text-lg font-semibold">{product.name}</h3>
+                <p className="text-gray-500">{product.brand}</p>
                 <div className="mt-2">
-                  <h4 className="text-md font-semibold">Reviews:</h4>
-                  {product.reviews.map((review) => (
-                    <div key={review.id} className="mt-2 border-t pt-2">
-                      <p className="text-sm font-semibold">{review.reviewer}:</p>
-                      <p className="text-sm italic">{review.comment}</p>
-                      <div className="flex items-center mt-1">
-                        <span className="text-xs text-gray-600">{review.date}</span>
-                        <span className="text-xs text-gray-600 ml-2">
-                          {review.likes} Likes | {review.dislikes} Dislikes
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                  {product.rating ? (
+                    <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-md">
+                      ({product.rating}) ★
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-600 italic">No reviews</span>
+                  )}
                 </div>
-              )}
-
-              {/* Price & Discount - Ensuring Proper Alignment */}
-              <div className="mt-2 flex items-center">
-                <span className="text-xl font-bold">Rs. {product.price}</span>
-                {product.originalPrice && (
-                  <span className="text-gray-500 line-through text-sm ml-2">
-                    Rs. {product.originalPrice}
-                  </span>
-                )}
-                {product.discount && (
-                  <span className="text-red-500 text-sm font-semibold ml-2">
-                    ({product.discount})
-                  </span>
-                )}
+                <div className="mt-2 flex items-center">
+                  <span className="text-xl font-bold">Rs. {product.price}</span>
+                  {product.originalPrice && (
+                    <span className="text-gray-500 line-through text-sm ml-2">
+                      Rs. {product.originalPrice}
+                    </span>
+                  )}
+                  {product.discount && (
+                    <span className="text-red-500 text-sm font-semibold ml-2">
+                      ({product.discount})
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="text-gray-500 col-span-full text-center">
+            No products found.
+          </p>
+        )}
       </section>
     </div>
   );

@@ -2,25 +2,48 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
+import ServiceUnavailable from "../SystemError/ServiceUnavailable";
+import LoadBubbleEffect from "../Effects/LoadBubbleEffect";
 
 
 const ProductDetails = () => {
   const { id } = useParams();
   const [sampleProducts, setProducts] = useState([]);
   const [selectedSize, setSelectedSize] = useState(null);
-  const userEmail = 'archit@gmail.com';
+  const userEmail = localStorage.getItem("username");
+  const backendUrl = "ae7b879491443483190312829691524e-767193481.ap-south-1.elb.amazonaws.com"
+  const [SystemError, setSystemError] = useState(false);
   const product = sampleProducts.find((item) => item.productId === Number(id));
+  const [loading, setLoading] = useState(true);
   const fetchProducts = async () => {
-    const response = await fetch("http://localhost:9091/products");
-    const data = await response.json();
-    setProducts(data);
-    console.log(data);
+    try{
+      const response = await fetch(`http://${backendUrl}/products`);
+      const data = await response.json();
+      if(data.length>0){
+        setLoading(false);
+        setProducts(data);
+        console.log(data);
+      }
+    }
+    catch(err){
+      //navigate("/error");
+      //return (<div><ServiceUnavailable /></div>);
+      setSystemError(true);
+    }
   };
   const [zoom, setZoom] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  if (loading) {
+      return (
+        <div className="flex justify-center items-center h-screen">
+          <LoadBubbleEffect />
+        </div>
+      );
+    }
 
   if (!product) return <p>Product Not Found</p>;
 
@@ -30,7 +53,9 @@ const ProductDetails = () => {
     const y = ((e.pageY - top) / height) * 100;
     setZoomPosition({ x, y });
   };
-
+  if(SystemError){
+      return (<div><ServiceUnavailable /></div>);
+ }
   const handleAddToCart = async () => {
     if (!selectedSize) {
       console.log("Please select a size before adding to cart.");
@@ -46,7 +71,7 @@ const ProductDetails = () => {
     console.log(requestData);
     
     try {
-      await axios.post('http://localhost:9093/cart/add', requestData, {
+      await axios.post(`http://${backendUrl}/cart/add`, requestData, {
         headers: { 'Content-Type': 'application/json' },
       });
       toast.success('Item added to cart!');
@@ -64,7 +89,7 @@ const ProductDetails = () => {
     console.log(requestData);
 
     try {
-      await axios.post('http://localhost:9093/wishlist/add', requestData, {
+      await axios.post(`http://${backendUrl}/wishlist/add`, requestData, {
         headers: { 'Content-Type': 'application/json' },
       });
       toast.success('Item added to wishlist!');
@@ -78,7 +103,7 @@ const ProductDetails = () => {
     <div className="flex p-10 max-w-6xl mx-auto">
       <ToastContainer position="top-right" autoClose={3000} />
       {/* Left Section (Fixed Product Image) */}
-      <div className="w-1/2 sticky top-20 h-[500px]">
+      <div className="w-1/2 relative h-[500px]">
         <div
           className="relative w-full border rounded-lg overflow-hidden"
           onMouseEnter={() => setZoom(true)}

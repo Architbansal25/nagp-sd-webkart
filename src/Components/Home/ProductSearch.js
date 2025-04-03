@@ -4,43 +4,40 @@ import axios from "axios";
 
 export default function ProductSearch() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [products, setProducts] = useState([]); // Store all products
-  const [filteredSuggestions, setFilteredSuggestions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch all products once when component mounts
+  const backendUrl =
+    "ae7b879491443483190312829691524e-767193481.ap-south-1.elb.amazonaws.com";
+
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchSuggestions = async () => {
+      if (!searchQuery.trim()) {
+        setSuggestions([]);
+        return;
+      }
+
+      setLoading(true);
       try {
-        const response = await axios.get("http://localhost:9091/products");
+        const response = await axios.get(
+          `http://${backendUrl}/search/name?name=${encodeURIComponent(searchQuery)}`
+        );
         if (response.status === 200 && Array.isArray(response.data)) {
-          setProducts(response.data); // Store all products in state
+          setSuggestions(response.data);
+        } else {
+          setSuggestions([]);
         }
       } catch (error) {
         console.error("Error fetching products:", error);
+        setSuggestions([]);
       }
       setLoading(false);
     };
 
-    fetchProducts();
-  }, []);
-
-  // Handle search input change
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredSuggestions([]);
-      return;
-    }
-
-    // Perform search on locally stored products
-    const filtered = products.filter(product =>
-      product.name && product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-
-    setFilteredSuggestions(filtered);
-  }, [searchQuery, products]);
+    const debounceTimeout = setTimeout(fetchSuggestions, 300); // Debounce for better UX
+    return () => clearTimeout(debounceTimeout);
+  }, [searchQuery]);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -48,8 +45,8 @@ export default function ProductSearch() {
 
   const handleSelectSuggestion = (product) => {
     setSearchQuery("");
-    setFilteredSuggestions([]); // Hide suggestions
-    navigate(`/product/${product.productId}`); // Redirect to product details page
+    setSuggestions([]);
+    navigate(`/product/${product.productId}`);
   };
 
   return (
@@ -62,26 +59,30 @@ export default function ProductSearch() {
         className="border p-2 rounded-md w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
-      {loading && <p className="absolute mt-1 text-gray-500 text-sm">Loading products...</p>}
+      {loading && (
+        <p className="absolute mt-1 text-gray-500 text-sm">Searching...</p>
+      )}
 
-      {filteredSuggestions.length > 0 ? (
-        <ul className="absolute left-0 right-0 bg-white border border-gray-300 shadow-md rounded-md mt-1 z-50">
-          {filteredSuggestions.map((product) => (
+      {suggestions.length > 0 ? (
+        <ul className="absolute left-0 right-0 bg-white border border-gray-300 shadow-md rounded-md mt-1 z-50 max-h-60 overflow-y-auto">
+          {suggestions.map((product) => (
             <li
               key={product.productId}
               onClick={() => handleSelectSuggestion(product)}
-              className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-gray-900"
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-800"
             >
               {product.name}
             </li>
           ))}
         </ul>
-      ) : searchQuery.length > 0 && (
-        <div className="absolute left-0 right-0 bg-white border border-gray-300 shadow-md rounded-md mt-1 z-50 p-4 text-gray-500">
-          No products found
-        </div>
+      ) : (
+        searchQuery.length > 0 &&
+        !loading && (
+          <div className="absolute left-0 right-0 bg-white border border-gray-300 shadow-md rounded-md mt-1 z-50 p-4 text-gray-500">
+            No products found
+          </div>
+        )
       )}
-
     </div>
   );
 }

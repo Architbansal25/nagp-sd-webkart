@@ -8,7 +8,8 @@ import LoadBubbleEffect from '../Effects/LoadBubbleEffect';
 export default function Wishlist() {
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
-  const userEmail = 'archit@gmail.com'; // Can make this dynamic later
+  const userEmail = localStorage.getItem("username");
+  const backendUrl = "ae7b879491443483190312829691524e-767193481.ap-south-1.elb.amazonaws.com" // Can make this dynamic later
 
   const navigate = useNavigate();
   // Fetch wishlist from API
@@ -16,7 +17,7 @@ export default function Wishlist() {
     const fetchWishlist = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:9093/wishlist/user/${userEmail}`,
+          `http://${backendUrl}/wishlist/user/${userEmail}`,
           {},
           { headers: { 'Content-Type': 'application/json' } }
         );
@@ -34,7 +35,7 @@ export default function Wishlist() {
   const removeItem = async (wishlishId) => {
     try {
       await axios.delete(
-        `http://localhost:9093/wishlist/delete/${wishlishId}`,
+        `http://${backendUrl}/wishlist/delete/${wishlishId}`,
         {},
         { headers: { 'Content-Type': 'application/json' } }
       );

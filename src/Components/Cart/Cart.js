@@ -18,12 +18,13 @@ export default function Cart() {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-  const userEmail = "archit@gmail.com";
+  const userEmail = localStorage.getItem("username");
+  const backendUrl = "ae7b879491443483190312829691524e-767193481.ap-south-1.elb.amazonaws.com"
 
   const fetchCart = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`http://localhost:9093/cart/user/${userEmail}`);
+      const { data } = await axios.get(`http://${backendUrl}/cart/user/${userEmail}`);
       setCart(data || []);
     } catch (err) {
       toast.error('Failed to fetch cart');
@@ -73,7 +74,7 @@ export default function Cart() {
 
   const addToWishlist = async (productId) => {
     try {
-      await axios.post('http://localhost:9093/wishlist/add', {
+      await axios.post(`http://${backendUrl}/wishlist/add`, {
         userName: userEmail,
         productId,
       });
@@ -85,7 +86,7 @@ export default function Cart() {
 
   const updateQuantity = async (cartId, updatedQty) => {
     try {
-      await axios.put(`http://localhost:9093/cart/update/quantity/${cartId}?quantity=${updatedQty}`);
+      await axios.put(`http://${backendUrl}/cart/update/quantity/${cartId}?quantity=${updatedQty}`);
       fetchCart(); // refresh cart
     } catch {
       toast.error('Failed to update quantity');
@@ -94,7 +95,7 @@ export default function Cart() {
 
   const removeFromCart = async (cartId) => {
     try {
-      await axios.delete(`http://localhost:9093/cart/delete/${cartId}`);
+      await axios.delete(`http://${backendUrl}/cart/delete/${cartId}`);
       fetchCart(); // refresh cart
       toast.error('Removed from cart!');
     } catch {
@@ -124,7 +125,9 @@ export default function Cart() {
     }
   
     const products = cart.map(item => ({
+      cartId: item.cartId,
       productId: item.productId,
+      productName: item.name,
       size: item.size,
       quantity: item.quantity,
       buyAtPrice: item.price * item.quantity,
@@ -134,7 +137,8 @@ export default function Cart() {
       userName: userEmail,
       coupanCode: appliedCoupon ? appliedCoupon.code : "",
       paymentStatus: "pending",  // Default until payment success
-      shippingId: null,  // Will be updated in Shipping.js
+      shippingId: null,
+      shippingAddress: null  // Will be updated in Shipping.js
     };
     
     console.log("Products:", products);

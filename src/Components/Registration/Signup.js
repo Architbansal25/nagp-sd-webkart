@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
 export default function Signup({ switchToLogin }) {
+  const backendUrl = "ae7b879491443483190312829691524e-767193481.ap-south-1.elb.amazonaws.com"
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -25,7 +26,7 @@ export default function Signup({ switchToLogin }) {
     }
 
     try {
-      const response = await fetch("http://localhost:9092/auth/register", {
+      const response = await fetch(`http://${backendUrl}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
