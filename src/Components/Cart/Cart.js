@@ -19,7 +19,7 @@ export default function Cart() {
   const navigate = useNavigate();
 
   const userEmail = localStorage.getItem("username");
-  const backendUrl = "ae7b879491443483190312829691524e-767193481.ap-south-1.elb.amazonaws.com"
+  const backendUrl = "a03ca4bfe8f9349dd913e64221f7c0a8-699713062.ap-south-1.elb.amazonaws.com"
 
   const fetchCart = async () => {
     setLoading(true);
