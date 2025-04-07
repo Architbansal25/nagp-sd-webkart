@@ -19,7 +19,7 @@ const Product = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`http://${backendUrl}/products`);
+      const response = await fetch(`http://${backendUrl}/products`);
       const data = await response.json();
       if (data.length > 0) {
         setProducts(data);
