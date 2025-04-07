@@ -11,7 +11,7 @@ const ProductDetails = () => {
   const [sampleProducts, setProducts] = useState([]);
   const [selectedSize, setSelectedSize] = useState(null);
   const userEmail = localStorage.getItem("username");
-  const backendUrl = "ae7b879491443483190312829691524e-767193481.ap-south-1.elb.amazonaws.com"
+  const backendUrl = "a03ca4bfe8f9349dd913e64221f7c0a8-699713062.ap-south-1.elb.amazonaws.com"
   const [SystemError, setSystemError] = useState(false);
   const product = sampleProducts.find((item) => item.productId === Number(id));
   const [loading, setLoading] = useState(true);
