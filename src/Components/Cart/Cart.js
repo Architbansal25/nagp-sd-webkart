@@ -7,6 +7,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link } from 'react-router-dom';
 import LoadBubbleEffect from '../Effects/LoadBubbleEffect';
+import { BACKEND_URL } from '../../Config/constants';
 
 export default function Cart() {
   const [cart, setCart] = useState([]);
@@ -19,7 +20,7 @@ export default function Cart() {
   const navigate = useNavigate();
 
   const userEmail = localStorage.getItem("username");
-  const backendUrl = "a03ca4bfe8f9349dd913e64221f7c0a8-699713062.ap-south-1.elb.amazonaws.com"
+  const backendUrl = BACKEND_URL;
 
   const fetchCart = async () => {
     setLoading(true);

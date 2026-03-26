@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { auth } from "../../Config/firebase-config";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { BACKEND_URL } from "../../Config/constants";
 
 export default function Signup({ switchToLogin }) {
-  const backendUrl = "a03ca4bfe8f9349dd913e64221f7c0a8-699713062.ap-south-1.elb.amazonaws.com"
+  const backendUrl = BACKEND_URL;
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",

@@ -3,13 +3,14 @@ import React, { useState } from "react";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../../Config/firebase-config";
 import { useNavigate } from "react-router-dom";
+import { BACKEND_URL } from "../../Config/constants";
 
 export default function Login({ switchToSignup }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const backendUrl = "a03ca4bfe8f9349dd913e64221f7c0a8-699713062.ap-south-1.elb.amazonaws.com"
+  const backendUrl = BACKEND_URL;
   // Handle Google Login
   const handleGoogleLogin = async () => {
     try {

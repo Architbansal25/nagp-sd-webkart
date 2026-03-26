@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ServiceUnavailable from "../SystemError/ServiceUnavailable";
 import LoadBubbleEffect from "../Effects/LoadBubbleEffect";
+import { BACKEND_URL } from "../../Config/constants";
 const Product = () => {
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [sortOption, setSortOption] = useState("");
@@ -11,7 +12,7 @@ const Product = () => {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const backendUrl = "a03ca4bfe8f9349dd913e64221f7c0a8-699713062.ap-south-1.elb.amazonaws.com";
+  const backendUrl = BACKEND_URL;
 
   // Extract category from URL query
   const queryParams = new URLSearchParams(location.search);

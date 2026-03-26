@@ -3,6 +3,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { BACKEND_URL } from '../../Config/constants';
 
 export default function Shipping() {
   const [formData, setFormData] = useState({
@@ -23,7 +24,7 @@ export default function Shipping() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); // Hook for redirection
   const userEmail = localStorage.getItem("username");
-  const backendUrl = "a03ca4bfe8f9349dd913e64221f7c0a8-699713062.ap-south-1.elb.amazonaws.com" // Replace with actual user data
+  const backendUrl = BACKEND_URL;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

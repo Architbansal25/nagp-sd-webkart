@@ -2,12 +2,13 @@ import React, { useEffect, useRef  } from "react";
 import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import "./Checkout.css"; // Import your CSS file for styling
+import { BACKEND_URL } from "../../Config/constants";
 export default function Checkout() {
   const location = useLocation();
   const { products, orderDetails } = location.state || {};
   const orderPlacedRef = useRef(false);
   const totalAmount = orderDetails.paidAmount || 0;
-  const backendUrl = "a03ca4bfe8f9349dd913e64221f7c0a8-699713062.ap-south-1.elb.amazonaws.com"
+  const backendUrl = BACKEND_URL;
   useEffect(() => {
     if (!orderPlacedRef.current && products?.length && orderDetails) {
       const finalOrder = {

@@ -4,12 +4,13 @@ import { FiTrash2 } from 'react-icons/fi';
 import axios from 'axios';
 import EmptyWishlist from './EmptyWishlist';
 import LoadBubbleEffect from '../Effects/LoadBubbleEffect';
+import { BACKEND_URL } from '../../Config/constants';
 
 export default function Wishlist() {
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
   const userEmail = localStorage.getItem("username");
-  const backendUrl = "a03ca4bfe8f9349dd913e64221f7c0a8-699713062.ap-south-1.elb.amazonaws.com" // Can make this dynamic later
+  const backendUrl = BACKEND_URL;
 
   const navigate = useNavigate();
   // Fetch wishlist from API
