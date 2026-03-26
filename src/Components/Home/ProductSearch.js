@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { BACKEND_URL } from "../../Config/constants";
 
 export default function ProductSearch() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -8,8 +9,7 @@ export default function ProductSearch() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const backendUrl =
-    "a03ca4bfe8f9349dd913e64221f7c0a8-699713062.ap-south-1.elb.amazonaws.com";
+  const backendUrl = BACKEND_URL;
 
   useEffect(() => {
     const fetchSuggestions = async () => {
