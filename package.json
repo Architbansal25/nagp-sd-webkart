@@ -49,5 +49,8 @@
     "postcss": "^8.5.1",
     "postcss-loader": "^8.1.1",
     "tailwindcss": "^4.0.3"
+  },
+  "overrides": {
+    "lodash": "4.17.21"
   }
 }
