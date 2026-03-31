@@ -16,10 +16,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14'  # Change this to your required Node.js version
+          node-version: '18'  # Node 18 ships with npm 9 which supports package.json overrides
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
+
+      - name: Deduplicate lodash
+        run: npm dedupe
 
       - name: Build Scripts
         env: 
