@@ -19,7 +19,7 @@ export default function Cart() {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-  const userEmail = localStorage.getItem("username");
+  const userEmail = localStorage.getItem("username") || localStorage.getItem("guestId");
   const backendUrl = BACKEND_URL;
 
   const fetchCart = async () => {

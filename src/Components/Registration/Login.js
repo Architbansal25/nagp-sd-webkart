@@ -8,9 +8,25 @@ import { BACKEND_URL } from "../../Config/constants";
 export default function Login({ switchToSignup }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const backendUrl = BACKEND_URL;
+
+  const mergeGuestCart = async (loggedInEmail) => {
+    const guestId = localStorage.getItem("guestId");
+    if (!guestId) return;
+    try {
+      await fetch(`http://${backendUrl}/cart/merge`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guestId, userName: loggedInEmail }),
+      });
+      localStorage.removeItem("guestId");
+      console.log("Guest cart merged for:", loggedInEmail);
+    } catch (err) {
+      console.error("Cart merge failed:", err.message);
+    }
+  };
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const backendUrl = BACKEND_URL;
   // Handle Google Login
   const handleGoogleLogin = async () => {
     try {
@@ -21,7 +37,9 @@ export default function Login({ switchToSignup }) {
       localStorage.setItem("authToken", googleToken);
 
       console.log("Google Login Success:", result.user.email);
-      localStorage.setItem("username", result.user.email); // Store username in localStorage
+      localStorage.setItem("username", result.user.email);
+      await mergeGuestCart(result.user.email);
+      window.dispatchEvent(new Event("loginStateChange"));
       navigate("/");
     } catch (err) {
       setError(err.message);
@@ -44,9 +62,11 @@ export default function Login({ switchToSignup }) {
       }
 
       const data = await response.json();
-      localStorage.setItem("authToken", data.token); // Store token in localStorage
+      localStorage.setItem("authToken", data.token);
       localStorage.setItem("username", email);
       console.log("Login Success:", data);
+      await mergeGuestCart(email);
+      window.dispatchEvent(new Event("loginStateChange"));
       navigate("/");
     } catch (err) {
       setError(err.message);

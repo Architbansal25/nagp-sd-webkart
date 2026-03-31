@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import ServiceUnavailable from "../SystemError/ServiceUnavailable";
@@ -7,8 +7,20 @@ import LoadBubbleEffect from "../Effects/LoadBubbleEffect";
 import { BACKEND_URL } from "../../Config/constants";
 
 
+const getCartUser = () => {
+  const email = localStorage.getItem("username");
+  if (email) return email;
+  let guestId = localStorage.getItem("guestId");
+  if (!guestId) {
+    guestId = "guest_" + Math.random().toString(36).slice(2, 11);
+    localStorage.setItem("guestId", guestId);
+  }
+  return guestId;
+};
+
 const ProductDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [sampleProducts, setProducts] = useState([]);
   const [selectedSize, setSelectedSize] = useState(null);
   const userEmail = localStorage.getItem("username");
@@ -64,7 +76,7 @@ const ProductDetails = () => {
       return;
     }
     const requestData = {
-      userName: userEmail,
+      userName: getCartUser(),
       productId: product.productId,
       size: selectedSize,
       quantity: 1,
