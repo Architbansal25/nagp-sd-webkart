@@ -13,7 +13,6 @@ const Home = () => {
       <Carousel></Carousel>
       {/* Static Banner */}
       <div className="p-8 "> <Banner></Banner></div>
-      <h1>hello change </h1>
       {/* "Shop By Category" Section */}
       <div className="text-center mt-14">
         <Categories></Categories>
