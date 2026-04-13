@@ -14,15 +14,54 @@ export default function Login({ switchToSignup }) {
     const guestId = localStorage.getItem("guestId");
     if (!guestId) return;
     try {
-      await fetch(`http://${backendUrl}/cart/merge`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guestId, userName: loggedInEmail }),
-      });
+      // Fetch guest cart and user's existing cart in parallel
+      const [guestRes, userRes] = await Promise.all([
+        fetch(`http://${backendUrl}/cart/user/${guestId}`),
+        fetch(`http://${backendUrl}/cart/user/${loggedInEmail}`),
+      ]);
+      if (!guestRes.ok) return;
+      const guestItems = await guestRes.json();
+      if (!Array.isArray(guestItems) || guestItems.length === 0) {
+        localStorage.removeItem("guestId");
+        return;
+      }
+      const userItems = userRes.ok ? await userRes.json() : [];
+      const existingItems = Array.isArray(userItems) ? userItems : [];
+
+      // Merge: update quantity for duplicates, add new items otherwise
+      await Promise.all(
+        guestItems.map((item) => {
+          const existing = existingItems.find(
+            (u) => u.productId === item.productId && u.size === item.size
+          );
+          if (existing) {
+            return fetch(
+              `http://${backendUrl}/cart/update/quantity/${existing.cartId}?quantity=${existing.quantity + item.quantity}`,
+              { method: "PUT" }
+            );
+          }
+          return fetch(`http://${backendUrl}/cart/add`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userName: loggedInEmail,
+              productId: item.productId,
+              size: item.size,
+              quantity: item.quantity,
+            }),
+          });
+        })
+      );
+      // Delete each guest cart item after transfer
+      await Promise.all(
+        guestItems.map((item) =>
+          fetch(`http://${backendUrl}/cart/delete/${item.cartId}`, { method: "DELETE" })
+        )
+      );
       localStorage.removeItem("guestId");
-      console.log("Guest cart merged for:", loggedInEmail);
+      console.log("Guest cart transferred for:", loggedInEmail);
     } catch (err) {
-      console.error("Cart merge failed:", err.message);
+      console.error("Guest cart transfer failed:", err.message);
     }
   };
   const [error, setError] = useState("");
@@ -32,13 +71,21 @@ export default function Login({ switchToSignup }) {
     try {
       const result = await signInWithPopup(auth, provider);
       const googleToken = result.user.accessToken;
-      
+      const googleEmail = result.user.email;
+
+      // Register/upsert the Google user in the backend (no-op if already exists)
+      await fetch(`http://${backendUrl}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: googleEmail, password: googleToken }),
+      });
+
       // Save Google token in localStorage
       localStorage.setItem("authToken", googleToken);
 
-      console.log("Google Login Success:", result.user.email);
-      localStorage.setItem("username", result.user.email);
-      await mergeGuestCart(result.user.email);
+      console.log("Google Login Success:", googleEmail);
+      localStorage.setItem("username", googleEmail);
+      await mergeGuestCart(googleEmail);
       window.dispatchEvent(new Event("loginStateChange"));
       navigate("/");
     } catch (err) {

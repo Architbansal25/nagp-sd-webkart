@@ -19,6 +19,7 @@ import Checkout from "./Components/Checkout/Checkout";
 import ServiceUnavailable from "./Components/SystemError/ServiceUnavailable";
 import Categories from "./Components/Catagories/Categories";
 import ProtectedRoute from "./Components/utils/ProtectedRoute";
+import SearchResults from "./Components/Home/SearchResults";
 
 const App = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -34,6 +35,7 @@ const App = () => {
         <Route path="/about" element={<About />} />
         <Route path="/error" element={<ServiceUnavailable />} />
         <Route path="/categories" element={<Categories />} />
+        <Route path="/search" element={<SearchResults />} />
         <Route path="/cart" element={<Cart />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/wishlist" element={<Wishlist />} />

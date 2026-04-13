@@ -10,6 +10,7 @@ const Product = () => {
   const [brands, setBrands] = useState([]); // Store unique brands
   const [systemError, setSystemError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const location = useLocation();
   const navigate = useNavigate();
   const backendUrl = BACKEND_URL;
@@ -45,6 +46,7 @@ const Product = () => {
 
   useEffect(() => {
     fetchProducts();
+    setCurrentPage(1);
   }, [selectedCategory]); // Refetch products when category changes
 
   const handleProductClick = (productId) => {
@@ -68,6 +70,17 @@ const Product = () => {
   } else if (sortOption === "mostBought") {
     filteredProducts.sort((a, b) => (b.reviews || 0) - (a.reviews || 0));
   }
+
+  const PAGE_SIZE = 10;
+  const totalPages = Math.ceil(filteredProducts.length / PAGE_SIZE);
+  const paginated = filteredProducts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const getPageNumbers = (current, total) => {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 4) return [1, 2, 3, 4, 5, "...", total];
+    if (current >= total - 3) return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+    return [1, "...", current - 1, current, current + 1, "...", total];
+  };
 
   if (systemError) {
     return <ServiceUnavailable />;
@@ -93,11 +106,12 @@ const Product = () => {
               <label key={brand} className="flex items-center space-x-2 mt-2">
                 <input
                   type="checkbox"
-                  onChange={() =>
+                  onChange={() => {
                     setSelectedBrands((prev) =>
                       prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
-                    )
-                  }
+                    );
+                    setCurrentPage(1);
+                  }}
                   checked={selectedBrands.includes(brand)}
                 />
                 <span>{brand}</span>
@@ -113,7 +127,7 @@ const Product = () => {
           <h3 className="text-md font-semibold">Sort By</h3>
           <select
             className="w-full p-2 border rounded mt-2"
-            onChange={(e) => setSortOption(e.target.value)}
+            onChange={(e) => { setSortOption(e.target.value); setCurrentPage(1); }}
           >
             <option value="">Select</option>
             <option value="lowToHigh">Price: Low to High</option>
@@ -124,53 +138,88 @@ const Product = () => {
       </aside>
 
       {/* Right Section - Products */}
-      <section className="w-3/4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-4">
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
-            <div
-              key={product.productId}
-              className="border p-4 rounded-lg shadow-lg flex flex-col justify-between cursor-pointer"
-              onClick={() => handleProductClick(product.productId)}
-            >
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-64 object-contain rounded-md"
-              />
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold">{product.name}</h3>
-                <p className="text-gray-500">{product.brand}</p>
-                <div className="mt-2">
-                  {product.rating ? (
-                    <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-md">
-                      ({product.rating}) ★
-                    </span>
-                  ) : (
-                    <span className="text-sm text-gray-600 italic">No reviews</span>
-                  )}
-                </div>
-                <div className="mt-2 flex items-center">
-                  <span className="text-xl font-bold">Rs. {product.price}</span>
-                  {product.originalPrice && (
-                    <span className="text-gray-500 line-through text-sm ml-2">
-                      Rs. {product.originalPrice}
-                    </span>
-                  )}
-                  {product.discount && (
-                    <span className="text-red-500 text-sm font-semibold ml-2">
-                      ({product.discount})
-                    </span>
-                  )}
+      <div className="w-3/4 flex flex-col">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-4">
+          {filteredProducts.length > 0 ? (
+            paginated.map((product) => (
+              <div
+                key={product.productId}
+                className="border p-4 rounded-lg shadow-lg flex flex-col justify-between cursor-pointer"
+                onClick={() => handleProductClick(product.productId)}
+              >
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-64 object-contain rounded-md"
+                />
+                <div className="mt-4">
+                  <h3 className="text-lg font-semibold">{product.name}</h3>
+                  <p className="text-gray-500">{product.brand}</p>
+                  <div className="mt-2">
+                    {product.rating ? (
+                      <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-md">
+                        ({product.rating}) ★
+                      </span>
+                    ) : (
+                      <span className="text-sm text-gray-600 italic">No reviews</span>
+                    )}
+                  </div>
+                  <div className="mt-2 flex items-center">
+                    <span className="text-xl font-bold">Rs. {product.price}</span>
+                    {product.originalPrice && (
+                      <span className="text-gray-500 line-through text-sm ml-2">
+                        Rs. {product.originalPrice}
+                      </span>
+                    )}
+                    {product.discount && (
+                      <span className="text-red-500 text-sm font-semibold ml-2">
+                        ({product.discount})
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500 col-span-full text-center">
-            No products found.
-          </p>
+            ))
+          ) : (
+            <p className="text-gray-500 col-span-full text-center">
+              No products found.
+            </p>
+          )}
+        </div>
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-2 mb-6 flex-wrap">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 rounded border text-sm disabled:opacity-40 hover:bg-gray-100"
+            >
+              Prev
+            </button>
+            {getPageNumbers(currentPage, totalPages).map((page, i) =>
+              page === "..." ? (
+                <span key={`ellipsis-${i}`} className="px-2 py-1 text-sm text-gray-400">...</span>
+              ) : (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-1 rounded border text-sm ${
+                    currentPage === page ? "bg-blue-500 text-white border-blue-500" : "hover:bg-gray-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            )}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 rounded border text-sm disabled:opacity-40 hover:bg-gray-100"
+            >
+              Next
+            </button>
+          </div>
         )}
-      </section>
+      </div>
     </div>
   );
 };

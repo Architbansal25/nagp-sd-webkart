@@ -3,6 +3,8 @@ import { auth } from "../../Config/firebase-config";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../../Config/constants";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Signup({ switchToLogin }) {
   const backendUrl = BACKEND_URL;
@@ -38,13 +40,21 @@ export default function Signup({ switchToLogin }) {
         }),
       });
 
+      if (response.status === 409) {
+        setError("An account with this email already exists.");
+        return;
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Signup failed.");
       }
 
       console.log("User registered successfully");
-      navigate("/login");
+      toast.success("Registration successful! Redirecting to login...", {
+        autoClose: 2000,
+        onClose: () => navigate("/login"),
+      });
     } catch (err) {
       setError(err.message);
       console.error("Signup Error:", err.message);
@@ -58,6 +68,7 @@ export default function Signup({ switchToLogin }) {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <ToastContainer position="top-right" />
       <div className="bg-white p-8 rounded-xl shadow-lg w-96">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           Create an account

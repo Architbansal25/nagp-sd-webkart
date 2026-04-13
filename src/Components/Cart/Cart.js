@@ -34,8 +34,57 @@ export default function Cart() {
     }
   };
 
+  // If user is logged in but a guestId still exists (prior transfer failed), retry item-by-item then fetch
   useEffect(() => {
-    fetchCart();
+    const loggedInEmail = localStorage.getItem("username");
+    const pendingGuestId = localStorage.getItem("guestId");
+
+    const transferAndFetch = async () => {
+      try {
+        const [guestRes, userRes] = await Promise.all([
+          axios.get(`http://${backendUrl}/cart/user/${pendingGuestId}`),
+          axios.get(`http://${backendUrl}/cart/user/${loggedInEmail}`),
+        ]);
+        const guestItems = guestRes.data || [];
+        const existingItems = userRes.data || [];
+        if (guestItems.length > 0) {
+          await Promise.all(
+            guestItems.map((item) => {
+              const existing = existingItems.find(
+                (u) => u.productId === item.productId && u.size === item.size
+              );
+              if (existing) {
+                return axios.put(
+                  `http://${backendUrl}/cart/update/quantity/${existing.cartId}?quantity=${existing.quantity + item.quantity}`
+                );
+              }
+              return axios.post(`http://${backendUrl}/cart/add`, {
+                userName: loggedInEmail,
+                productId: item.productId,
+                size: item.size,
+                quantity: item.quantity,
+              });
+            })
+          );
+          await Promise.all(
+            guestItems.map((item) =>
+              axios.delete(`http://${backendUrl}/cart/delete/${item.cartId}`)
+            )
+          );
+        }
+        localStorage.removeItem("guestId");
+      } catch (err) {
+        console.error("Guest cart transfer failed in Cart:", err.message);
+      } finally {
+        fetchCart();
+      }
+    };
+
+    if (loggedInEmail && pendingGuestId) {
+      transferAndFetch();
+    } else {
+      fetchCart();
+    }
   }, []);
 
   useEffect(() => {
