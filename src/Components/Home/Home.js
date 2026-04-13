@@ -16,6 +16,7 @@ const Home = () => {
   
       {/* "Shop By Category" Section */}
       <div className="text-center mt-14">
+      <h1>hello change</h1>
         <Categories></Categories>
       </div>
     </div>
