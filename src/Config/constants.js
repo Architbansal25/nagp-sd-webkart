@@ -1,1 +1,1 @@
-export const BACKEND_URL = "ac4c70c3fe0f84bb0be197c376275905-505941082.ap-south-1.elb.amazonaws.com";
+export const BACKEND_URL = "a1ce2ae8efe924d848e832fe020e1a36-440023197.ap-south-1.elb.amazonaws.com";
